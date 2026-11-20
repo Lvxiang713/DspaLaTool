@@ -4,11 +4,16 @@ A local interface for tabular classification, model-derived equations and predic
 
 ## Quick start
 
-- **Windows modeling tool.** Download and extract the repository. On 64-bit Windows, double-click `Start_DSpaLaRefiner.cmd`. The first launch downloads any needed Python runtime and CPU dependencies. The launcher shows setup progress in the terminal. It opens the local tool in your browser after setup. Upload `examples/manufacturing.csv` and choose `quality` to try it. Keep the launcher window open while using the tool.
-- **Paper predictor.** Open the [merged-hospital predictor](predictors/Diabetes_Equation_Predictor_From_SWMU%26NSMC.html) in a browser. It runs offline and supports individual and batch inputs. See the [prediction instructions](predictors/README.md).
-- **Developer install.** Install with `python -m pip install .` and run `dspalarefiner-ui --runs ../private_runs`. For GPU training, install PyTorch for your CUDA environment before installing the tool.
+1. **Install from GitHub Releases (recommended).** Download the Windows x64 setup EXE from [Releases](https://github.com/Lvxiang713/DspaLaTool/releases) and run it. Choose an installation folder and open **DspaLaTool** from the Start menu. The installer includes Python and the CPU dependencies. To try the tool locally, upload `examples/manufacturing.csv` from the installation folder and select `quality` as the target.
+2. **Run from source.** Download and extract the repository, then double-click `Start_DSpaLaRefiner.cmd`. The first launch downloads any needed Python runtime and CPU dependencies, then opens the tool in your browser. Use `examples/manufacturing.csv` from the extracted folder to try the same workflow. If the browser does not open, go to `http://127.0.0.1:8765/`. Keep the launcher window open while using the tool.
 
-Use localhost at `http://127.0.0.1:8765/`. The desktop launcher stores its environment and runs under `%LOCALAPPDATA%/DSpaLaRefiner`. Modeling, equation export and local guidance require no API key. If you already have the matching CPU PyTorch wheel, run `Start_DSpaLaRefiner.cmd --torch-wheel path-to-wheel.whl` to reuse it during setup.
+## Paper predictor
+
+Download the [merged-hospital predictor](predictors/Diabetes_Equation_Predictor_From_SWMU%26NSMC.html) and open the HTML file in a browser. It runs offline and supports individual and batch inputs. See the [prediction instructions](predictors/README.md).
+
+## Developer install
+
+Install with `python -m pip install .` and run `dspalarefiner-ui --runs ../private_runs`. For GPU training, install PyTorch for your CUDA environment before installing the tool. To reuse a downloaded CPU PyTorch wheel during source setup, run `Start_DSpaLaRefiner.cmd --torch-wheel path-to-wheel.whl`.
 
 ## Workflow
 
