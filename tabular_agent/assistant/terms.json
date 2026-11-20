@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "concepts": [
+    {"id":"model_architecture","aliases":["模型原理","架构","地标","landmark","DSpaLaRefiner"],"query":"model architecture landmark kernel distance vote"},
+    {"id":"geometric_additive","aliases":["几何","加性","二次解析式","geometric","additive"],"query":"geometric additive quadratic mean distance coefficients"},
+    {"id":"taylor_first_order","aliases":["一阶","线性展开","first order"],"query":"Taylor first order gradient linear"},
+    {"id":"taylor_second_order","aliases":["二阶","海森","Hessian","second order"],"query":"Taylor second order Hessian interaction"},
+    {"id":"taylor_third_order","aliases":["三阶","立方","cubic","third order"],"query":"Taylor third order cubic tensor"},
+    {"id":"reference_point","aliases":["参考点","展开点","零点","reference point"],"query":"Taylor reference expansion point local approximation"},
+    {"id":"approximation_fidelity","aliases":["保真","还原","一致率","拟合误差","fidelity","agreement"],"query":"approximation fidelity prediction agreement error"},
+    {"id":"classification_performance","aliases":["效果不好","性能","准确率","分类指标","ACC","MCC","performance"],"query":"classification metrics ACC MCC F1 performance"},
+    {"id":"feature_contribution","aliases":["重要性","归因","贡献","排名","SHAP","coefficient"],"query":"SHAP coefficient feature ranking contribution drilldown"},
+    {"id":"training_parameters","aliases":["参数","学习率","批量","训练轮数","tether","batch","epochs"],"query":"training parameters learning rate tether batch size landmarks epochs"},
+    {"id":"data_preparation","aliases":["数据准备","上传","特征类型","标签","CSV","target"],"query":"data preparation CSV upload target numeric categorical leakage"},
+    {"id":"troubleshooting","aliases":["报错","失败","显存","故障","error","CUDA"],"query":"troubleshooting errors CUDA memory failed"},
+    {"id":"saved_model_reanalysis","aliases":["重新分析","不重新训练","复用模型","reanalysis","reanalyze"],"query":"saved model reanalysis without training"},
+    {"id":"export_reproducibility","aliases":["导出","下载","模板","复现","export","template"],"query":"export reproducibility standalone HTML predictor batch template"},
+    {"id":"modeling_guide","aliases":["怎么开始","使用流程","建模步骤","start modeling"],"query":"guided modeling workflow steps"}
+  ]
+}

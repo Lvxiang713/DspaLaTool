@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dspalarefiner-tool"
+version = "0.1.1"
+description = "DSpaLaRefiner classification, interpretable equations and a local modeling assistant"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "numpy>=1.24,<3", "pandas>=1.5,<3", "torch>=2.0,<3",
+  "scikit-learn>=1.2,<2", "matplotlib>=3.6,<4", "joblib>=1.2,<2"
+]
+
+[project.scripts]
+dspalarefiner = "tabular_agent.__main__:main"
+dspalarefiner-ui = "tabular_agent.serve:main"
+dspalarefiner-predict = "tabular_agent.predict:main"
+dspalarefiner-features = "tabular_agent.features:main"
+
+[tool.setuptools.packages.find]
+include = ["tabular_agent*"]
+
+[tool.setuptools.package-data]
+"tabular_agent" = ["loss_view.js", "equation_expand.js", "term_drill.js"]
+"tabular_agent.assistant" = ["knowledge/*.md", "skills/*.md", "terms.json", "web/*.js", "web/*.css", "web/*.txt", "web/fonts/*"]

@@ -1,0 +1,320 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width">
+<title>Explicit equation predictor</title>
+<style>
+body{font:16px system-ui;color:#19344b;background:#f5f8fb;max-width:1100px;margin:32px auto;padding:16px}
+math{font-size:1.25em;margin:18px 0}.equation-math{overflow-x:auto}
+section{background:white;padding:24px;border-radius:12px;margin:18px 0}
+#fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+label{display:flex;flex-direction:column;gap:6px}input,select,textarea,button{font:inherit;padding:10px;border:1px solid #bdccd5;border-radius:6px}
+button{background:#116b91;color:white;cursor:pointer}textarea{width:95%;height:120px}
+.bar{display:flex;gap:12px;align-items:center;margin:8px 0}.track{height:10px;border-radius:5px}
+#result{display:flex;align-items:baseline;gap:12px 24px;flex-wrap:wrap}.prediction-label{font-size:36px;font-weight:700}.normalized-score{font-size:20px;font-weight:500}small{color:#567}pre{white-space:pre-wrap}
+#exampleRow{margin:4px 0 18px}#exampleRow button{margin-right:12px}.fieldName{font-weight:600}small.unit{color:#596d7d;font-size:13px}
+/* Discrete indicator coding help */
+.indicator-code-field { position: relative; }
+.indicator-code-tooltip {
+    position: absolute; inset: auto 0 calc(100% + 6px); z-index: 10;
+    padding: 8px 10px; border-radius: 6px; background: #19344b; color: #fff;
+    font: 13px/1.45 system-ui; font-weight: 400; white-space: normal;
+    box-shadow: 0 3px 12px #19344b33; pointer-events: none; visibility: hidden;
+}
+.indicator-code-field:hover > .indicator-code-tooltip,
+.indicator-code-field:focus-within > .indicator-code-tooltip { visibility: visible; }
+</style>
+<h1>Predict with an explicit quadratic equation</h1>
+<div class="equation-math"><math display='block'><msub><mi>S</mi><mi>c</mi></msub><mo>=</mo><msub><mi>β</mi><mi>c</mi></msub><mo>+</mo><munder><mo>∑</mo><mi>j</mi></munder><mo>(</mo><msub><mi>A</mi><mi>cj</mi></msub><msup><msub><mi>z</mi><mi>j</mi></msub><mn>2</mn></msup><mo>+</mo><msub><mi>B</mi><mi>cj</mi></msub><msub><mi>z</mi><mi>j</mi></msub><mo>)</mo></math><h3 style="font:600 14px system-ui;margin-top:20px">Top 5 coefficient-ranked features · main terms</h3><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;align-items:center"><div style="min-width:0"><svg viewBox="0 0 425 280" role="img" aria-label="Top five features ranked by coefficient norm" style="width:100%;font-family:system-ui"><title>Top 5 coefficient-ranked features</title><g tabindex="0" role="button" style="cursor:pointer" onclick="openCoefficientDrill(this,&quot;GLU&quot;)" onkeydown="if(event.key===&quot;Enter&quot;||event.key===&quot; &quot;)this.click()"><text x="138" y="35" text-anchor="end" fill="#30495d" font-size="12">GLU</text><rect x="150" y="20" width="210.00" height="22" rx="4" fill="#087ba4"/><text x="370.00" y="35" fill="#536b7d" font-size="11">1.85</text></g><g tabindex="0" role="button" style="cursor:pointer" onclick="openCoefficientDrill(this,&quot;age&quot;)" onkeydown="if(event.key===&quot;Enter&quot;||event.key===&quot; &quot;)this.click()"><text x="138" y="83" text-anchor="end" fill="#30495d" font-size="12">age</text><rect x="150" y="68" width="76.41" height="22" rx="4" fill="#087ba4"/><text x="236.41" y="83" fill="#536b7d" font-size="11">0.674</text></g><g tabindex="0" role="button" style="cursor:pointer" onclick="openCoefficientDrill(this,&quot;GLU-Urine&quot;)" onkeydown="if(event.key===&quot;Enter&quot;||event.key===&quot; &quot;)this.click()"><text x="138" y="131" text-anchor="end" fill="#30495d" font-size="12">GLU-Urine</text><rect x="150" y="116" width="20.52" height="22" rx="4" fill="#087ba4"/><text x="180.52" y="131" fill="#536b7d" font-size="11">0.181</text></g><g tabindex="0" role="button" style="cursor:pointer" onclick="openCoefficientDrill(this,&quot;HCT&quot;)" onkeydown="if(event.key===&quot;Enter&quot;||event.key===&quot; &quot;)this.click()"><text x="138" y="179" text-anchor="end" fill="#30495d" font-size="12">HCT</text><rect x="150" y="164" width="17.84" height="22" rx="4" fill="#087ba4"/><text x="177.84" y="179" fill="#536b7d" font-size="11">0.157</text></g><g tabindex="0" role="button" style="cursor:pointer" onclick="openCoefficientDrill(this,&quot;PDW&quot;)" onkeydown="if(event.key===&quot;Enter&quot;||event.key===&quot; &quot;)this.click()"><text x="138" y="227" text-anchor="end" fill="#30495d" font-size="12">PDW</text><rect x="150" y="212" width="16.55" height="22" rx="4" fill="#087ba4"/><text x="176.55" y="227" fill="#536b7d" font-size="11">0.146</text></g><text x="255" y="275" text-anchor="middle" font-size="11" fill="#607487">Coefficient norm</text></svg></div><div style="display:grid;gap:6px;min-width:0"><div style="padding:8px 12px;background:white;border-radius:8px;overflow-x:auto;min-width:0"><strong style="font:13px system-ui">GLU</strong><math display="block" style="font-size:1.05em;width:max-content;margin:8px 0"><mrow><mn>1.184</mn><msup><msub><mi>z</mi><mtext>GLU</mtext></msub><mn>2</mn></msup><mo>+</mo><mn>1.4245</mn><msub><mi>z</mi><mtext>GLU</mtext></msub></mrow></math></div><div style="padding:8px 12px;background:white;border-radius:8px;overflow-x:auto;min-width:0"><strong style="font:13px system-ui">age</strong><math display="block" style="font-size:1.05em;width:max-content;margin:8px 0"><mrow><mo>−</mo><mn>0.18726</mn><msup><msub><mi>z</mi><mtext>age</mtext></msub><mn>2</mn></msup><mo>+</mo><mn>0.64749</mn><msub><mi>z</mi><mtext>age</mtext></msub></mrow></math></div><div style="padding:8px 12px;background:white;border-radius:8px;overflow-x:auto;min-width:0"><strong style="font:13px system-ui">GLU-Urine</strong><math display="block" style="font-size:1.05em;width:max-content;margin:8px 0"><mrow><mn>0.065891</mn><msup><msub><mi>z</mi><mtext>GLU-Urine</mtext></msub><mn>2</mn></msup><mo>+</mo><mn>0.16854</mn><msub><mi>z</mi><mtext>GLU-Urine</mtext></msub></mrow></math></div><div style="padding:8px 12px;background:white;border-radius:8px;overflow-x:auto;min-width:0"><strong style="font:13px system-ui">HCT</strong><math display="block" style="font-size:1.05em;width:max-content;margin:8px 0"><mrow><mn>0.0069502</mn><msup><msub><mi>z</mi><mtext>HCT</mtext></msub><mn>2</mn></msup><mo>−</mo><mn>0.15717</mn><msub><mi>z</mi><mtext>HCT</mtext></msub></mrow></math></div><div style="padding:8px 12px;background:white;border-radius:8px;overflow-x:auto;min-width:0"><strong style="font:13px system-ui">PDW</strong><math display="block" style="font-size:1.05em;width:max-content;margin:8px 0"><mrow><mn>0.14177</mn><msup><msub><mi>z</mi><mtext>PDW</mtext></msub><mn>2</mn></msup><mo>−</mo><mn>0.034795</mn><msub><mi>z</mi><mtext>PDW</mtext></msub></mrow></math></div><div style="text-align:center;font-size:22px">…</div></div></div><p style="font-size:13px">Click a ranked feature to inspect its terms, or choose a feature: <select onchange="openCoefficientDrill(this,this.value)"><option value="" disabled selected>Select a feature</option><option>ALT</option><option>AST</option><option>AST/ALT</option><option>BASO</option><option>BASO-R</option><option>BLD</option><option>Crystal</option><option>EOS</option><option>EOS-R</option><option>GLU</option><option>GLU-Urine</option><option>HCT</option><option>HDL-C</option><option>HGB</option><option>LDL-C</option><option>LYM</option><option>LYM-R</option><option>MCH</option><option>MCHC</option><option>MCV</option><option>MONO</option><option>MONO-R</option><option>MPV</option><option>NEU</option><option>NEU-R</option><option>PCT</option><option>PDW</option><option>PLT</option><option>RBC</option><option>RBC-Urine</option><option>RDW-CV</option><option>TC</option><option>TG</option><option>U-SG</option><option>U-pH</option><option>WBC</option><option>age</option><option>sex</option><option>gamma-GGT</option></select></p><div class="coefficient-drill"></div><script type="text/javascript">function equationTerms(a,names,groups,classIndex){
+ const binary=a.classes.length===2&&a.kind!=="regression_fitted_quadratic";
+ const e=a.classes[binary?1:(classIndex===undefined?a.classes.length-1:classIndex)];
+ const base=binary?a.classes[0]:null,p=names.length,out=new Map();
+ const add=(ix,c)=>{
+  if(!c)return;
+  ix=ix.slice().sort((x,y)=>x-y);
+  const key=ix.join(","),old=out.get(key);
+  if(old){old.coefficient+=c;return}
+  const powers=new Map();ix.forEach(i=>powers.set(i,(powers.get(i)||0)+1));
+  const label=[...powers].map(([i,k])=>"z["+names[i]+"]"+(k===2?"²":k===3?"³":"")).join(" × ");
+  out.set(key,{indices:ix,names:ix.map(i=>names[i]),groups:ix.map(i=>groups[i]),label,coefficient:c});
+ };
+ if(a.kind==="native_taylor"){
+  for(let i=0;i<p;i++){
+   add([i],e.linear[i]-(base?base.linear[i]:0));
+   for(let j=0;j<p;j++){
+    add([i,j],(e.H[i][j]-(base?base.H[i][j]:0))/2);
+    if(e.T)for(let k=0;k<p;k++)add([i,j,k],(e.T[i][j][k]-(base?base.T[i][j][k]:0))/6);
+   }
+  }
+ }else for(let i=0;i<p;i++){
+  add([i],e.B[i]-(base?base.B[i]:0));
+  add([i,i],e.A[i]-(base?base.A[i]:0));
+ }
+ return [...out.values()].filter(t=>t.coefficient!==0);
+}
+function termMath(term){
+ const ns="http://www.w3.org/1998/Math/MathML";
+ const node=(tag,text)=>{const el=document.createElementNS(ns,tag);if(text!==undefined)el.textContent=text;return el};
+ const math=node("math"),row=node("mrow"),powers=new Map();
+ term.indices.forEach((index,k)=>{const current=powers.get(index);if(current)current.power++;else powers.set(index,{name:term.names[k],power:1})});
+ let first=true;
+ for(const {name,power} of powers.values()){
+  if(!first)row.append(node("mo","·"));first=false;
+  const variable=node("msub");variable.append(node("mi","z"),node("mtext",name));
+  if(power>1){const raised=node("msup");raised.append(variable,node("mn",String(power)));row.append(raised)}
+  else row.append(variable);
+ }
+ math.append(row);math.setAttribute("aria-label",term.label);
+ math.style.cssText="font-size:1.1em;margin:0;max-width:100%";
+ return math;
+}
+function renderTermDrill(target,terms,feature,z){
+ target.replaceChildren();
+ const title=document.createElement("h4");title.textContent=feature+" · "+(z?"sample contribution":"coefficient")+" breakdown";target.append(title);
+ const rows=terms.filter(t=>t.groups.includes(feature)).map(t=>{
+  const full=z?t.indices.reduce((v,i)=>v*z[i],t.coefficient):t.coefficient;
+  const share=t.groups.filter(g=>g===feature).length/t.indices.length;
+  return {...t,full,value:z?full*share:full};
+ }).sort((a,b)=>Math.abs(b.value)-Math.abs(a.value));
+ const note=document.createElement("p");note.style.fontSize="13px";
+ note.textContent=z?"Ranked by absolute allocated contribution. Interaction terms are shared by coordinate multiplicity; all allocated terms sum to the feature bar.":"All nonzero complete-input terms containing this feature, ranked by absolute coefficient.";
+ target.append(note);
+ const max=Math.max(...rows.map(r=>Math.abs(r.value)),1e-15);
+ for(const r of rows){
+  const line=document.createElement("div");line.style.cssText="display:grid;grid-template-columns:minmax(160px,2fr) minmax(70px,1fr) 95px;gap:12px;align-items:center;margin:9px 0";
+  const label=document.createElement("span");label.append(termMath(r));label.style.cssText="overflow-x:auto;min-width:0";
+  const track=document.createElement("span");track.style.cssText="display:block;height:10px;border-radius:5px;width:"+100*Math.abs(r.value)/max+"%;background:"+(r.value>=0?"#9a63bf":"#009e78");
+  const value=document.createElement("span");value.textContent=r.value.toPrecision(5);
+  if(z){value.title="Full term contribution: "+r.full.toPrecision(7);
+   const detail=document.createElement("small");detail.style.cssText="display:block;font-size:11px;color:#607487";
+   detail.textContent="Full: "+r.full.toPrecision(5);value.append(detail)}
+  line.append(label,track,value);target.append(line);
+ }
+ if(!rows.length){const p=document.createElement("p");p.textContent="No nonzero terms.";target.append(p)}
+}
+function openCoefficientDrill(element,feature){
+ const root=element.closest(".equation-math"),a=JSON.parse(root.querySelector("[data-equation]").dataset.equation);
+ renderTermDrill(root.querySelector(".coefficient-drill"),equationTerms(a,a.names,a.groups),feature);
+}
+</script><details style="margin-top:18px" data-equation="{&quot;kind&quot;:&quot;native_geometric_quadratic&quot;,&quot;names&quot;:[&quot;ALT&quot;,&quot;AST&quot;,&quot;AST/ALT&quot;,&quot;BASO&quot;,&quot;BASO-R&quot;,&quot;BLD&quot;,&quot;Crystal&quot;,&quot;EOS&quot;,&quot;EOS-R&quot;,&quot;GLU&quot;,&quot;GLU-Urine&quot;,&quot;HCT&quot;,&quot;HDL-C&quot;,&quot;HGB&quot;,&quot;LDL-C&quot;,&quot;LYM&quot;,&quot;LYM-R&quot;,&quot;MCH&quot;,&quot;MCHC&quot;,&quot;MCV&quot;,&quot;MONO&quot;,&quot;MONO-R&quot;,&quot;MPV&quot;,&quot;NEU&quot;,&quot;NEU-R&quot;,&quot;PCT&quot;,&quot;PDW&quot;,&quot;PLT&quot;,&quot;RBC&quot;,&quot;RBC-Urine&quot;,&quot;RDW-CV&quot;,&quot;TC&quot;,&quot;TG&quot;,&quot;U-SG&quot;,&quot;U-pH&quot;,&quot;WBC&quot;,&quot;age&quot;,&quot;sex&quot;,&quot;gamma-GGT&quot;],&quot;groups&quot;:[&quot;ALT&quot;,&quot;AST&quot;,&quot;AST/ALT&quot;,&quot;BASO&quot;,&quot;BASO-R&quot;,&quot;BLD&quot;,&quot;Crystal&quot;,&quot;EOS&quot;,&quot;EOS-R&quot;,&quot;GLU&quot;,&quot;GLU-Urine&quot;,&quot;HCT&quot;,&quot;HDL-C&quot;,&quot;HGB&quot;,&quot;LDL-C&quot;,&quot;LYM&quot;,&quot;LYM-R&quot;,&quot;MCH&quot;,&quot;MCHC&quot;,&quot;MCV&quot;,&quot;MONO&quot;,&quot;MONO-R&quot;,&quot;MPV&quot;,&quot;NEU&quot;,&quot;NEU-R&quot;,&quot;PCT&quot;,&quot;PDW&quot;,&quot;PLT&quot;,&quot;RBC&quot;,&quot;RBC-Urine&quot;,&quot;RDW-CV&quot;,&quot;TC&quot;,&quot;TG&quot;,&quot;U-SG&quot;,&quot;U-pH&quot;,&quot;WBC&quot;,&quot;age&quot;,&quot;sex&quot;,&quot;gamma-GGT&quot;],&quot;classes&quot;:[{&quot;intercept&quot;:1.0422539687539387,&quot;A&quot;:[-0.0001469441762344634,-0.10560386424829443,-2.1681779202519952e-05,-0.00011229606374097543,-0.0004947605431846023,-1.791319129711966e-09,-0.010716982976269163,-5.860028324145611e-05,-0.00021722403081203217,-1.189012313360683,-0.08504943525601238,-0.03800119963419547,-4.4230980378690205e-05,-0.01833034905500008,-9.4060140104793e-06,-5.1163719266825094e-05,-0.009492508000161366,-4.1666949042448135e-10,-0.0009059412095634063,-1.760167111608234e-07,-0.028228820943048922,-0.005123469073749405,-1.1230271036895338e-06,-0.01834631129524859,-0.002096541788925769,-0.0030695125742352834,-0.14177204198384913,-0.0001243424245700929,-0.011864039402291929,-5.021008217698375e-05,-5.0874419287820244e-05,-0.001421560947761489,-0.0033656763867148374,-0.00026421564174028357,-5.661518852448727e-13,-0.0018200380603204673,-0.05286582258340032,-6.304409065448036e-13,-0.002301718437517797],&quot;B&quot;:[-2.8965306671645467e-05,-0.010205622010842873,8.683985147929387e-07,8.554157041951455e-05,0.0006437601502826533,6.923076714163708e-10,-0.0008804526937475011,-3.7620868814678448e-06,4.435268399579312e-06,-1.4063092552953624,-0.10579509814699921,0.06557683601220882,5.948383755339046e-05,0.02935740153947918,8.12751426527668e-06,5.6130590205097156e-05,0.014608074714391905,2.1904634561534412e-10,-3.0106507289126714e-05,1.555511274094438e-07,-0.020309172584629817,-0.003518539181274827,-8.601017731663724e-07,-0.01574081428628926,-0.0028457409757702648,0.000804015748336217,0.03479521722290363,6.0162532052839216e-05,0.016740219012051315,-4.241906647120331e-06,-3.1589687455702165e-05,0.0013123887901999873,-0.0018731122253538468,9.572901600883701e-05,1.7773466663760014e-13,-0.0012291279170105023,-0.10786727147860226,1.84261150256651e-13,-0.0007254427645659319],&quot;D&quot;:[-0.00014694692273798388,-0.10560362306446704,-2.1682159833944437e-05,-0.00011229097631977113,-0.000494821796135355,-1.7904680086093098e-09,-0.010716928034609245,-5.8613215886839495e-05,-0.00021724772509571823,-1.189004991123855,-0.08507126242498617,-0.03800301901168627,-4.423779200718786e-05,-0.018331358990162337,-9.405958255409373e-06,-5.1207961594085783e-05,-0.009495628644775319,-4.169428221711342e-10,-0.0009061226396514548,-1.7607024036200884e-07,-0.028228896179183005,-0.0051234627030872,-1.1324832023981684e-06,-0.018346356366528607,-0.0020975574586698286,-0.0030730644870626683,-0.1417723998232329,-0.00012448873355860326,-0.011865043586437047,-5.0218156964810953e-05,-5.0895756155877096e-05,-0.0014215179056056412,-0.0033763091858791507,-0.0002642536270141894,-1.1927145155484145e-13,-0.001820173610465685,-0.05286454518789629,-1.7741913128104267e-13,-0.0023019336349436566]},{&quot;intercept&quot;:0.9883237853741469,&quot;A&quot;:[-2.6367782255238332e-08,-1.9945149969382857e-13,-3.5157581205808595e-07,-0.00022764905419902487,-0.004936411634571226,-6.642182816404725e-06,-2.1562994423562475e-07,-1.93069798121548e-10,-4.2421688513842435e-07,-0.00496867108666042,-0.019157944889769372,-0.031050966784269586,-0.004600773540837597,-0.017784990055980263,-0.0003131286010282654,-0.0032162144638206622,-0.019346631512188888,-0.0004809729067035972,-3.137480447294703e-07,-0.002081314113209998,-0.00018423858000557998,-5.716763058910924e-06,-5.949093132188315e-05,-4.357358566220039e-05,-0.00753986133486908,-1.7020135766853248e-13,-6.050923560773081e-11,-6.813314392626792e-13,-0.004498357423754736,-6.459459642614953e-05,-1.6372182487528432e-08,-0.00016425141517881176,-1.7965105325317374e-06,-1.4172396621253072e-13,-2.8369745630624276e-05,-7.906053946917329e-06,-0.2401297195414754,-0.0002728457402659415,-1.2364769804706533e-06],&quot;B&quot;:[3.8839703342425394e-08,6.12109379329019e-14,-5.115107529586078e-07,-0.0005093187383672046,-0.010340095516456869,-1.5590831512750382e-06,4.1869385876737714e-07,-1.0954787046182993e-10,-3.283888754200071e-07,0.01823094420279038,0.06274358580747715,-0.09159161549926118,-0.009528707685707473,-0.049590090947139794,-0.0005339498194670807,-0.007267239025969742,-0.0565282859200132,-0.0008417344179542871,9.500240940020945e-07,-0.0039044445831411204,0.000533203708329398,1.6765889860884235e-05,8.259114500176787e-05,0.00015850963114707374,0.021160247333152866,-3.108846159076274e-14,-2.794297664498143e-10,-5.049322956247405e-13,-0.012653629893181719,-2.632903064654264e-06,4.189307285872569e-08,-0.0003610153929440523,5.855135753607236e-06,-2.4196750555379823e-14,-2.3861096756184317e-05,2.8234970078678144e-05,0.5396190849438571,-0.00032881583286952144,4.742031524925874e-06],&quot;D&quot;:[-2.638311040124488e-08,-1.8256052019523647e-13,-3.516755417745124e-07,-0.00022765615856572665,-0.004936435311822201,-6.651170255176971e-06,-2.156679246240086e-07,-1.9381747777820402e-10,-4.243026812375389e-07,-0.004971795724076102,-0.019161735275759012,-0.031053416728091185,-0.004597723974790565,-0.01778632696945249,-0.000313136589456298,-0.0032219180800145,-0.019350736668959853,-0.0004810510387652617,-3.121055558867212e-07,-0.0020814036047803637,-0.00018425072023903498,-5.721443158712453e-06,-5.948537753556362e-05,-4.357975716711408e-05,-0.007543661406412175,-1.5244753482733614e-13,-6.218676162952002e-11,-6.489388202870044e-13,-0.00450277116006528,-6.410795648018287e-05,-1.6424226022183043e-08,-0.00016423026261388668,-1.7965657298992165e-06,-1.3444782201581975e-13,-2.8403184364272488e-05,-7.906083904053429e-06,-0.24013467779334302,-0.0002728489548502645,-1.2369620291867102e-06]}]}" ontoggle="if(this.open&amp;&amp;!this.dataset.rendered){
+ const d=JSON.parse(this.dataset.equation),ns=&quot;http://www.w3.org/1998/Math/MathML&quot;;
+ const node=(tag,text)=&gt;{const e=document.createElementNS(ns,tag);if(text!==undefined)e.textContent=text;return e};
+ const sub=(symbol,name)=&gt;{const e=node(&quot;msub&quot;);e.append(node(&quot;mi&quot;,symbol),node(&quot;mtext&quot;,name));return e};
+ const binary=d.classes.length===2,eqs=binary?[d.classes[1]]:d.classes;
+ const base=binary?d.classes[0]:null,p=d.names.length;
+ const target=this.querySelector(&quot;.full-equation&quot;);
+ const coord=i=&gt;sub(&quot;z&quot;,d.names[i]);
+ const product=indices=&gt;{
+  const counts=new Map();
+  for(const i of indices)counts.set(i,(counts.get(i)||0)+1);
+  return [...counts].map(([i,power])=&gt;{
+   if(power===1)return coord(i);
+   const term=node(&quot;msup&quot;);term.append(coord(i),node(&quot;mn&quot;,String(power)));return term;
+  });
+ };
+ eqs.forEach((e,c)=&gt;{
+  const block=document.createElement(&quot;div&quot;);block.style.cssText=&quot;margin:16px 0;max-height:520px;overflow:auto;background:white;border-radius:8px;padding:16px&quot;;
+  const line=(parts)=&gt;{
+   const math=node(&quot;math&quot;),row=node(&quot;mrow&quot;);
+   math.style.cssText=&quot;font-size:1em;display:block;width:max-content;margin:0&quot;;
+   row.append(...parts);math.append(row);
+   const wrapper=document.createElement(&quot;div&quot;);wrapper.style.cssText=&quot;padding:7px 0&quot;;
+   wrapper.append(math);block.append(wrapper);
+  };
+  const label=binary?node(&quot;mi&quot;,&quot;Q&quot;):sub(&quot;S&quot;,String(c));
+  line([label,node(&quot;mo&quot;,&quot;=&quot;),node(&quot;mn&quot;,Number((e.intercept-(base?base.intercept:0)).toPrecision(7)).toString())]);
+  const add=(v,factors)=&gt;{
+   if(v===0)return;
+   line([node(&quot;mo&quot;,v&lt;0?&quot;−&quot;:&quot;+&quot;),node(&quot;mn&quot;,Number(Math.abs(v).toPrecision(7)).toString()),...factors]);
+  };
+  if(d.kind===&quot;native_taylor&quot;){
+   const n=p;
+   for(let i=0;i&lt;n;i++)add(e.linear[i]-(base?base.linear[i]:0),[coord(i)]);
+   for(let i=0;i&lt;n;i++)for(let j=i;j&lt;n;j++)
+    add((e.H[i][j]-(base?base.H[i][j]:0))*(i===j?.5:1),product([i,j]));
+   if(e.T)for(let i=0;i&lt;n;i++)for(let j=i;j&lt;n;j++)for(let k=j;k&lt;n;k++){
+    const factor=i===k?1/6:(i===j||j===k?.5:1);
+    add((e.T[i][j][k]-(base?base.T[i][j][k]:0))*factor,product([i,j,k]));
+   }
+  }else{
+   for(let j=0;j&lt;p;j++){
+    add(e.A[j]-(base?base.A[j]:0),product([j,j]));
+    add(e.B[j]-(base?base.B[j]:0),[sub(&quot;z&quot;,d.names[j])]);
+   }
+  }
+  target.append(block);
+ });
+ this.dataset.rendered=&quot;true&quot;;
+}
+"><summary style="cursor:pointer;font:600 14px system-ui">Show full numerical equation</summary><math display='block'><mrow><msub><mi>z</mi><mi>j</mi></msub><mo>=</mo><mfrac><mrow><msub><mi>x</mi><mi>j</mi></msub><mo>−</mo><msub><mi>μ</mi><mi>j</mi></msub></mrow><msub><mi>σ</mi><mi>j</mi></msub></mfrac></mrow></math><div class="full-equation" style="overflow-wrap:anywhere"></div></details></div><section><h2>Input features</h2><p id="exampleRow"><button id="fillExample" type="button">Fill typical T2D example</button><button id="clearInputs" type="button">Clear inputs</button><br><small>Synthetic complete example for interface demonstration only. Units follow the paper table.</small></p><div id="fields"></div>
+<p><button id="predict">Calculate prediction</button></p><div id="result"></div>
+<p id="scoreRule"></p>
+<p id="inputError" role="alert" style="color:#ad3939"></p>
+<div id="contributions"></div><div id="sampleDrill"></div></section>
+<section><h2>Batch prediction</h2>
+<p><button id="downloadTemplate">Download CSV template</button></p>
+<small>The template includes a complete synthetic T2D example. CSV values use the units shown above.</small>
+<p><input id="batchFile" type="file" accept=".csv,text/csv" hidden><button id="uploadBatch">Upload CSV</button> <span id="batchFilename">No file selected</span></p>
+<textarea id="batch"></textarea><p><button id="calculateBatch">Download predictions</button></p><p id="error" role="alert"></p></section>
+<script>
+const FEATURE_UNITS={"ALT": "U/L", "AST": "U/L", "AST/ALT": "ratio", "BASO": "10E9/L", "BASO-R": "%", "BLD": "dataset code", "Crystal": "/uL", "EOS": "10E9/L", "EOS-R": "%", "GLU": "mmol/L", "GLU-Urine": "dataset code", "HCT": "ratio", "HDL-C": "mmol/L", "HGB": "g/L", "LDL-C": "mmol/L", "LYM": "10E9/L", "LYM-R": "%", "MCH": "pg", "MCHC": "g/L", "MCV": "fL", "MONO": "10E9/L", "MONO-R": "%", "MPV": "fL", "NEU": "10E9/L", "NEU-R": "%", "PCT": "%", "PDW": "%", "PLT": "10E9/L", "RBC": "10E12/L", "RBC-Urine": "/uL", "RDW-CV": "%", "TC": "mmol/L", "TG": "mmol/L", "U-SG": "ratio", "U-pH": "pH units", "WBC": "10E9/L", "age": "years", "sex": "dataset code", "gamma-GGT": "U/L"};
+const DEMO_EXAMPLE={"ALT": 26.82, "AST": 25.2, "AST/ALT": 0.94, "BASO": 0.02, "BASO-R": 0.24, "BLD": 0, "Crystal": 23.45, "EOS": 0.13, "EOS-R": 1.99, "GLU": 9.8, "GLU-Urine": 1.0, "HCT": 0.39, "HDL-C": 1.14, "HGB": 126.97, "LDL-C": 2.71, "LYM": 1.57, "LYM-R": 23.1, "MCH": 29.4, "MCHC": 328.3, "MCV": 89.55, "MONO": 0.45, "MONO-R": 6.12, "MPV": 11.44, "NEU": 5.5, "NEU-R": 68.59, "PCT": 0.24, "PDW": 15.48, "PLT": 206.96, "RBC": 4.33, "RBC-Urine": 20.96, "RDW-CV": 13.34, "TC": 4.63, "TG": 2.28, "U-SG": 1.02, "U-pH": 5.73, "WBC": 7.68, "age": 58, "sex": 1, "gamma-GGT": 49.49};
+const DATA={"equation": {"mean": [26.111774444580078, 25.8472900390625, 1.2235544919967651, 0.02591978944838047, 0.41151541471481323, 0.35529428720474243, 21.547863006591797, 0.14257876574993134, 2.261497735977173, 7.476937770843506, 0.8368050456047058, 0.40971726179122925, 1.2711600065231323, 134.3317108154297, 2.7851152420043945, 1.7347521781921387, 27.588565826416016, 29.907005310058594, 327.358154296875, 91.32367706298828, 0.3974197208881378, 5.954589366912842, 11.1423978805542, 4.491446495056152, 63.78947067260742, 0.22581222653388977, 16.055147171020508, 205.5747833251953, 4.499783992767334, 36.09373092651367, 13.308666229248047, 4.722414016723633, 1.8418751955032349, 1.019986629486084, 5.899251937866211, 6.79514217376709, 52.73000717163086, 0.49259549379348755, 39.1248664855957], "std": [40.74406814575195, 56.30949020385742, 2.0547871589660645, 0.02005690149962902, 0.2810543477535248, 0.7527912259101868, 494.8375244140625, 0.15458913147449493, 2.2257614135742188, 5.1980109214782715, 1.3685799837112427, 0.06369892507791519, 0.379671186208725, 22.20452880859375, 0.9142723679542542, 0.6770297288894653, 10.035948753356934, 2.4742681980133057, 12.073272705078125, 6.516292095184326, 0.26381203532218933, 1.99155855178833, 1.6052731275558472, 2.685511350631714, 10.993924140930176, 0.06776902079582214, 1.6432820558547974, 71.9500732421875, 0.7104601860046387, 645.234619140625, 1.2553669214248657, 1.201436996459961, 1.7702282667160034, 0.008174355141818523, 0.741345226764679, 2.87707781791687, 16.823217391967773, 0.49994516372680664, 76.7394790649414], "classes": [{"intercept": 1.0422539687539387, "A": [-0.0001469441762344634, -0.10560386424829443, -2.1681779202519952e-05, -0.00011229606374097543, -0.0004947605431846023, -1.791319129711966e-09, -0.010716982976269163, -5.860028324145611e-05, -0.00021722403081203217, -1.189012313360683, -0.08504943525601238, -0.03800119963419547, -4.4230980378690205e-05, -0.01833034905500008, -9.4060140104793e-06, -5.1163719266825094e-05, -0.009492508000161366, -4.1666949042448135e-10, -0.0009059412095634063, -1.760167111608234e-07, -0.028228820943048922, -0.005123469073749405, -1.1230271036895338e-06, -0.01834631129524859, -0.002096541788925769, -0.0030695125742352834, -0.14177204198384913, -0.0001243424245700929, -0.011864039402291929, -5.021008217698375e-05, -5.0874419287820244e-05, -0.001421560947761489, -0.0033656763867148374, -0.00026421564174028357, -5.661518852448727e-13, -0.0018200380603204673, -0.05286582258340032, -6.304409065448036e-13, -0.002301718437517797], "B": [-2.8965306671645467e-05, -0.010205622010842873, 8.683985147929387e-07, 8.554157041951455e-05, 0.0006437601502826533, 6.923076714163708e-10, -0.0008804526937475011, -3.7620868814678448e-06, 4.435268399579312e-06, -1.4063092552953624, -0.10579509814699921, 0.06557683601220882, 5.948383755339046e-05, 0.02935740153947918, 8.12751426527668e-06, 5.6130590205097156e-05, 0.014608074714391905, 2.1904634561534412e-10, -3.0106507289126714e-05, 1.555511274094438e-07, -0.020309172584629817, -0.003518539181274827, -8.601017731663724e-07, -0.01574081428628926, -0.0028457409757702648, 0.000804015748336217, 0.03479521722290363, 6.0162532052839216e-05, 0.016740219012051315, -4.241906647120331e-06, -3.1589687455702165e-05, 0.0013123887901999873, -0.0018731122253538468, 9.572901600883701e-05, 1.7773466663760014e-13, -0.0012291279170105023, -0.10786727147860226, 1.84261150256651e-13, -0.0007254427645659319], "D": [-0.00014694692273798388, -0.10560362306446704, -2.1682159833944437e-05, -0.00011229097631977113, -0.000494821796135355, -1.7904680086093098e-09, -0.010716928034609245, -5.8613215886839495e-05, -0.00021724772509571823, -1.189004991123855, -0.08507126242498617, -0.03800301901168627, -4.423779200718786e-05, -0.018331358990162337, -9.405958255409373e-06, -5.1207961594085783e-05, -0.009495628644775319, -4.169428221711342e-10, -0.0009061226396514548, -1.7607024036200884e-07, -0.028228896179183005, -0.0051234627030872, -1.1324832023981684e-06, -0.018346356366528607, -0.0020975574586698286, -0.0030730644870626683, -0.1417723998232329, -0.00012448873355860326, -0.011865043586437047, -5.0218156964810953e-05, -5.0895756155877096e-05, -0.0014215179056056412, -0.0033763091858791507, -0.0002642536270141894, -1.1927145155484145e-13, -0.001820173610465685, -0.05286454518789629, -1.7741913128104267e-13, -0.0023019336349436566]}, {"intercept": 0.9883237853741469, "A": [-2.6367782255238332e-08, -1.9945149969382857e-13, -3.5157581205808595e-07, -0.00022764905419902487, -0.004936411634571226, -6.642182816404725e-06, -2.1562994423562475e-07, -1.93069798121548e-10, -4.2421688513842435e-07, -0.00496867108666042, -0.019157944889769372, -0.031050966784269586, -0.004600773540837597, -0.017784990055980263, -0.0003131286010282654, -0.0032162144638206622, -0.019346631512188888, -0.0004809729067035972, -3.137480447294703e-07, -0.002081314113209998, -0.00018423858000557998, -5.716763058910924e-06, -5.949093132188315e-05, -4.357358566220039e-05, -0.00753986133486908, -1.7020135766853248e-13, -6.050923560773081e-11, -6.813314392626792e-13, -0.004498357423754736, -6.459459642614953e-05, -1.6372182487528432e-08, -0.00016425141517881176, -1.7965105325317374e-06, -1.4172396621253072e-13, -2.8369745630624276e-05, -7.906053946917329e-06, -0.2401297195414754, -0.0002728457402659415, -1.2364769804706533e-06], "B": [3.8839703342425394e-08, 6.12109379329019e-14, -5.115107529586078e-07, -0.0005093187383672046, -0.010340095516456869, -1.5590831512750382e-06, 4.1869385876737714e-07, -1.0954787046182993e-10, -3.283888754200071e-07, 0.01823094420279038, 0.06274358580747715, -0.09159161549926118, -0.009528707685707473, -0.049590090947139794, -0.0005339498194670807, -0.007267239025969742, -0.0565282859200132, -0.0008417344179542871, 9.500240940020945e-07, -0.0039044445831411204, 0.000533203708329398, 1.6765889860884235e-05, 8.259114500176787e-05, 0.00015850963114707374, 0.021160247333152866, -3.108846159076274e-14, -2.794297664498143e-10, -5.049322956247405e-13, -0.012653629893181719, -2.632903064654264e-06, 4.189307285872569e-08, -0.0003610153929440523, 5.855135753607236e-06, -2.4196750555379823e-14, -2.3861096756184317e-05, 2.8234970078678144e-05, 0.5396190849438571, -0.00032881583286952144, 4.742031524925874e-06], "D": [-2.638311040124488e-08, -1.8256052019523647e-13, -3.516755417745124e-07, -0.00022765615856572665, -0.004936435311822201, -6.651170255176971e-06, -2.156679246240086e-07, -1.9381747777820402e-10, -4.243026812375389e-07, -0.004971795724076102, -0.019161735275759012, -0.031053416728091185, -0.004597723974790565, -0.01778632696945249, -0.000313136589456298, -0.0032219180800145, -0.019350736668959853, -0.0004810510387652617, -3.121055558867212e-07, -0.0020814036047803637, -0.00018425072023903498, -5.721443158712453e-06, -5.948537753556362e-05, -4.357975716711408e-05, -0.007543661406412175, -1.5244753482733614e-13, -6.218676162952002e-11, -6.489388202870044e-13, -0.00450277116006528, -6.410795648018287e-05, -1.6424226022183043e-08, -0.00016423026261388668, -1.7965657298992165e-06, -1.3444782201581975e-13, -2.8403184364272488e-05, -7.906083904053429e-06, -0.24013467779334302, -0.0002728489548502645, -1.2369620291867102e-06]}], "kind": "native_geometric_quadratic", "provenance": {"fold": 0, "method": "geometric", "tether": 1, "source": "results/joint_hospital_cv_20261104_analysis_v3/fold00/geometric.json", "source_artifact_sha256": "7607d52b298b669f51861d44e53560077dd9c7075377babc18c0aeea9ee62cad", "export_reason": "user requested additive quadratic instead of Taylor"}}, "encoder": {"columns": ["ALT", "AST", "AST/ALT", "BASO", "BASO-R", "BLD", "Crystal", "EOS", "EOS-R", "GLU", "GLU-Urine", "HCT", "HDL-C", "HGB", "LDL-C", "LYM", "LYM-R", "MCH", "MCHC", "MCV", "MONO", "MONO-R", "MPV", "NEU", "NEU-R", "PCT", "PDW", "PLT", "RBC", "RBC-Urine", "RDW-CV", "TC", "TG", "U-SG", "U-pH", "WBC", "age", "sex", "gamma-GGT"], "names": ["ALT", "AST", "AST/ALT", "BASO", "BASO-R", "BLD", "Crystal", "EOS", "EOS-R", "GLU", "GLU-Urine", "HCT", "HDL-C", "HGB", "LDL-C", "LYM", "LYM-R", "MCH", "MCHC", "MCV", "MONO", "MONO-R", "MPV", "NEU", "NEU-R", "PCT", "PDW", "PLT", "RBC", "RBC-Urine", "RDW-CV", "TC", "TG", "U-SG", "U-pH", "WBC", "age", "sex", "gamma-GGT"], "groups": ["ALT", "AST", "AST/ALT", "BASO", "BASO-R", "BLD", "Crystal", "EOS", "EOS-R", "GLU", "GLU-Urine", "HCT", "HDL-C", "HGB", "LDL-C", "LYM", "LYM-R", "MCH", "MCHC", "MCV", "MONO", "MONO-R", "MPV", "NEU", "NEU-R", "PCT", "PDW", "PLT", "RBC", "RBC-Urine", "RDW-CV", "TC", "TG", "U-SG", "U-pH", "WBC", "age", "sex", "gamma-GGT"], "dropped": [], "schema": {}, "spec": [{"name": "ALT", "kind": "numeric"}, {"name": "AST", "kind": "numeric"}, {"name": "AST/ALT", "kind": "numeric"}, {"name": "BASO", "kind": "numeric"}, {"name": "BASO-R", "kind": "numeric"}, {"name": "BLD", "kind": "numeric"}, {"name": "Crystal", "kind": "numeric"}, {"name": "EOS", "kind": "numeric"}, {"name": "EOS-R", "kind": "numeric"}, {"name": "GLU", "kind": "numeric"}, {"name": "GLU-Urine", "kind": "numeric"}, {"name": "HCT", "kind": "numeric"}, {"name": "HDL-C", "kind": "numeric"}, {"name": "HGB", "kind": "numeric"}, {"name": "LDL-C", "kind": "numeric"}, {"name": "LYM", "kind": "numeric"}, {"name": "LYM-R", "kind": "numeric"}, {"name": "MCH", "kind": "numeric"}, {"name": "MCHC", "kind": "numeric"}, {"name": "MCV", "kind": "numeric"}, {"name": "MONO", "kind": "numeric"}, {"name": "MONO-R", "kind": "numeric"}, {"name": "MPV", "kind": "numeric"}, {"name": "NEU", "kind": "numeric"}, {"name": "NEU-R", "kind": "numeric"}, {"name": "PCT", "kind": "numeric"}, {"name": "PDW", "kind": "numeric"}, {"name": "PLT", "kind": "numeric"}, {"name": "RBC", "kind": "numeric"}, {"name": "RBC-Urine", "kind": "numeric"}, {"name": "RDW-CV", "kind": "numeric"}, {"name": "TC", "kind": "numeric"}, {"name": "TG", "kind": "numeric"}, {"name": "U-SG", "kind": "numeric"}, {"name": "U-pH", "kind": "numeric"}, {"name": "WBC", "kind": "numeric"}, {"name": "age", "kind": "numeric"}, {"name": "sex", "kind": "numeric"}, {"name": "gamma-GGT", "kind": "numeric"}], "unknown_category": "not applicable"}, "labels": ["Control", "T2DM"]};
+function templateCSV(){
+ const specs=DATA.encoder.spec;
+ const headers=specs.map(s=>s.name);
+ const example=specs.map(s=>{
+  if(s.kind!=="numeric")return s.levels[0];
+  const v=DEMO_EXAMPLE[s.name];
+  return Number.isFinite(v)?Number(v.toPrecision(7)):0;
+ });
+ const quote=v=>'"'+String(v??"").replaceAll('"','""')+'"';
+ return [headers,example].map(row=>row.map(quote).join(",")).join("\r\n");
+}
+function validateBatchCSV(text){
+ const rows=parseCSV(text);
+ for(const s of DATA.encoder.spec)if(!(s.name in rows[0]))throw Error("Missing CSV column: "+s.name);
+ rows.forEach((row,i)=>{try{validateCompleteRow(row)}catch(e){throw Error("Row "+(i+2)+": "+e.message)}});
+ return rows;
+}
+function validateCompleteRow(row){
+ for(const s of DATA.encoder.spec){
+  const value=row[s.name];
+  if(value===undefined||value===null||String(value).trim()==="")throw Error("Required: "+s.name);
+ }
+ const values=encode(row);
+ if(values.some(v=>!Number.isFinite(v)))throw Error("Select a valid value for every categorical feature.");
+}
+function encode(row){
+ const values=[];
+ for(const s of DATA.encoder.spec){
+  const raw=row[s.name], blank=raw===undefined||raw===null||String(raw).trim()==="";
+  if(s.kind==="numeric"){
+   const n=blank?NaN:Number(raw);if(!blank&&!Number.isFinite(n))throw Error("Invalid number: "+s.name);
+   values.push(n);
+  }else{
+   let key=String(raw);
+   if(!blank&&s.numeric_codes){
+    const n=Number(raw);
+    key=s.levels.find(l=>l===String(raw)||(Number.isFinite(n)&&
+     (!Number.isInteger(n)||Number.isSafeInteger(n))&&Number(l)===n));
+   }
+   for(const l of s.levels)values.push(blank||!s.levels.includes(key)?NaN:Number(key===l));
+  }
+ }return values;
+}
+function evaluate(row){
+ const a=DATA.equation,x=encode(row),z=x.map((v,j)=>(v-a.mean[j])/a.std[j]);
+ const terms=a.classes.map(e=>{
+  if(a.kind!=="native_taylor")return z.map((v,j)=>Number.isFinite(v)?e.A[j]*v*v+e.B[j]*v:e.D[j]);
+  const p=z.length,u=[...z.map(v=>Number.isFinite(v)?v:0),...z.map(v=>Number.isFinite(v)?0:1)];
+  const t=u.map((v,i)=>{
+   let value=v*e.linear[i];
+   for(let j=0;j<u.length;j++)value+=.5*v*e.H[i][j]*u[j];
+   if(e.T)for(let j=0;j<u.length;j++)for(let k=0;k<u.length;k++)value+=v*e.T[i][j][k]*u[j]*u[k]/6;
+   return value;
+  });
+  return t.slice(0,p).map((v,j)=>v+t[p+j]);
+ });
+ const scores=terms.map((t,c)=>a.classes[c].intercept+t.reduce((s,v)=>s+v,0));
+ let score,prediction,explain;
+ if(a.kind==="regression_fitted_quadratic"){score=scores[0];prediction=score;explain=terms[0]}
+ else{const best=scores.indexOf(Math.max(...scores));prediction=DATA.labels[best];
+ score=scores.length===2?scores[1]-scores[0]:scores[best];explain=scores.length===2?terms[1].map((v,j)=>v-terms[0][j]):terms[best]}
+ const groups={};DATA.encoder.groups.forEach((g,j)=>{if(Number.isFinite(x[j]))groups[g]=(groups[g]||0)+explain[j]});
+ const constant=a.kind!=="regression_fitted_quadratic"&&scores.length===2?
+ a.classes[1].intercept-a.classes[0].intercept:a.classes[scores.indexOf(Math.max(...scores))].intercept;
+ return {prediction,score,constant,normalized_score:a.kind==="regression_fitted_quadratic"?null:
+ (scores.length===2?1/(1+Math.exp(-score)):null),contributions:groups};
+}
+function parseCSV(text){
+ const rows=[];let row=[],cell="",quoted=false;
+ for(let i=0;i<text.length;i++){let c=text[i];
+ if(c==='"'){if(quoted&&text[i+1]==='"'){cell+='"';i++}else quoted=!quoted}
+ else if(c===','&&!quoted){row.push(cell);cell=""}
+ else if((c==='\n'||c==='\r')&&!quoted){if(c==='\r'&&text[i+1]==='\n')i++;row.push(cell);if(row.some(v=>v!==""))rows.push(row);row=[];cell=""}
+ else cell+=c}
+ if(quoted)throw Error("Unclosed CSV quote");if(cell||row.length){row.push(cell);rows.push(row)}
+ if(rows.length<2)throw Error("Provide a header and at least one data row");
+ const headers=rows.shift();if(new Set(headers).size!==headers.length)throw Error("Duplicate CSV headers");
+ return rows.map((r,i)=>{if(r.length!==headers.length)throw Error("CSV width mismatch at row "+(i+2));return Object.fromEntries(headers.map((h,j)=>[h,r[j]]))})
+}
+for(const s of DATA.encoder.spec){
+ const label=document.createElement("label");
+ const unit=FEATURE_UNITS[s.name];
+ label.innerHTML='<span class="fieldName">'+s.name+(unit?' <small class="unit">'+unit+'</small>':'')+'</span>';
+ const input=document.createElement(s.kind==="numeric"?"input":"select");
+ input.dataset.feature=s.name;input.required=true;if(s.kind==="numeric"){input.type="number";input.step="any"}else{
+ const opt=document.createElement("option");opt.value="";opt.textContent="Select a value";input.append(opt);
+ for(const l of s.levels){const o=document.createElement("option");o.value=l;o.textContent=l;input.append(o)}}
+ const codeHelp = ({"tc": "Total Cholesterol", "ast": "Aspartate Aminotransferase", "glu": "Blood Glucose", "hdl-c": "High Density Lipoprotein Cholesterol", "tg": "Triglyceride", "ldl-c": "Low Density Lipoprotein Cholesterin", "alt": "Alanine Aminotransferase", "gamma-ggt": "Gamma-Glutamyltransferase", "ast/alt": "Aspartate Transaminase / Alanine Aminotransferase", "bld": "Blood in Urine: 0 = \u2212 (negative); 0.5 = +\u2212 (trace); 1 = +; 2 = ++; 3 = +++; 4 = ++++.", "glu-urine": "Urine Glucose: 0 = \u2212 (negative); 0.5 = +\u2212 (trace); 1 = +; 2 = ++; 3 = +++; 4 = ++++.", "u-sg": "Urine Specific Gravity", "u-ph": "Urine pH", "crystal": "Crystallization", "rbc-urine": "Red Blood Cell in Urine", "neu": "Neutrophil", "neu-r": "Neutrophil Rate", "pct": "Plateletcrit", "pdw": "Platelet Distribution Width", "plt": "Platelet", "mpv": "Mean Platelet Volume", "hgb": "Haemoglobin", "eos": "Eosinophil", "eos-r": "Eosinophil Rate", "baso": "Basophil", "baso-r": "Basophil Rate", "lym": "Lymphocyte", "lym-r": "Lymphocyte Rate", "hct": "Haematocrit", "rdw-cv": "Coefficient of Variation of Red Cell Distribution Width", "rbc": "Red Blood Cell", "mchc": "Mean Corpuscular Haemoglobin Concentration", "mch": "Mean Corpuscular Haemoglobin", "mcv": "Mean Corpuscular Volume", "mono": "Monocyte", "mono-r": "Monocyte Rate", "wbc": "White Blood Cell", "age": "Age", "sex": "Sex: 0 = man; 1 = woman."})[s.name.toLowerCase()];
+ if (codeHelp) {
+  label.classList.add("indicator-code-field");
+  const tip = document.createElement("span");
+  tip.className = "indicator-code-tooltip"; tip.id = "code-help-" + s.name.toLowerCase();
+  tip.setAttribute("role", "tooltip"); tip.textContent = codeHelp;
+  input.setAttribute("aria-describedby", tip.id); label.append(tip);
+ }
+ label.append(input);document.querySelector("#fields").append(label);
+}
+document.querySelector("#fillExample").onclick=()=>{
+ for(const e of document.querySelectorAll("[data-feature]")){
+  e.value=String(DEMO_EXAMPLE[e.dataset.feature]);
+ }
+ document.querySelector("#inputError").textContent="";
+ document.querySelector("#predict").click();
+};
+document.querySelector("#clearInputs").onclick=()=>{
+ for(const e of document.querySelectorAll("[data-feature]"))e.value="";
+ document.querySelector("#result").replaceChildren();
+ document.querySelector("#contributions").replaceChildren();
+ document.querySelector("#sampleDrill").replaceChildren();
+ document.querySelector("#scoreRule").textContent="";
+ document.querySelector("#inputError").textContent="";
+};
+document.querySelector("#predict").onclick=()=>{try{
+ const row=Object.fromEntries([...document.querySelectorAll("[data-feature]")].map(e=>[e.dataset.feature,e.value]));
+ validateCompleteRow(row);
+ const r=evaluate(row),result=document.querySelector("#result");result.replaceChildren();
+ const prediction=document.createElement("span");prediction.className="prediction-label";prediction.textContent="Prediction: "+r.prediction;result.append(prediction);
+ if(r.normalized_score!==null){const score=document.createElement("span");score.className="normalized-score";score.textContent="Normalized score: "+r.normalized_score.toFixed(4);result.append(score)}
+ document.querySelector("#scoreRule").textContent=r.normalized_score===null?"":
+ "Normalized score > 0.5: class "+DATA.labels[1]+"; ≤ 0.5: class "+DATA.labels[0]+".";
+ const target=document.querySelector("#contributions");target.replaceChildren();
+ document.querySelector("#sampleDrill").replaceChildren();
+ const a=DATA.equation,z=encode(row).map((v,j)=>(v-a.mean[j])/a.std[j]);
+ const classIndex=DATA.labels.indexOf(r.prediction);
+ const drillTerms=equationTerms(a,DATA.encoder.names,DATA.encoder.groups,classIndex<0?0:classIndex);
+ const entries=Object.entries(r.contributions).sort((a,b)=>Math.abs(b[1])-Math.abs(a[1])),max=Math.max(...entries.map(e=>Math.abs(e[1])),1e-10);
+ for(const [name,v] of entries){const d=document.createElement("div");d.className="bar";
+ d.tabIndex=0;d.setAttribute("role","button");d.style.cursor="pointer";d.title="Inspect all terms containing "+name;
+ d.onclick=()=>renderTermDrill(document.querySelector("#sampleDrill"),drillTerms,name,z);
+ d.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();d.click()}};
+ const t=document.createElement("span");t.textContent=name+" "+v.toFixed(3);t.style.width="220px";
+ const b=document.createElement("span");b.className="track";b.style.width=(220*Math.abs(v)/max)+"px";b.style.background=v>=0?"#9a63bf":"#009e78";d.append(t,b);target.append(d)}
+ document.querySelector("#inputError").textContent="";
+ }catch(e){document.querySelector("#result").textContent="";document.querySelector("#contributions").replaceChildren();document.querySelector("#sampleDrill").replaceChildren();document.querySelector("#scoreRule").textContent="";document.querySelector("#inputError").textContent=e.message}};
+document.querySelector("#calculateBatch").onclick=()=>{try{
+ const rows=validateBatchCSV(document.querySelector("#batch").value);
+ const quote=v=>'"'+String(v??"").replaceAll('"','""')+'"';
+ const out=[["prediction","normalized_score"],...rows.map(row=>{const r=evaluate(row);return[r.prediction,r.normalized_score]})];
+ const url=URL.createObjectURL(new Blob([out.map(r=>r.map(quote).join(",")).join("\n")],{type:"text/csv"}));
+ const link=document.createElement("a");link.href=url;link.download="predictions.csv";link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ document.querySelector("#error").textContent="Calculated "+rows.length+" rows.";
+ }catch(e){document.querySelector("#error").textContent=e.message}};
+document.querySelector("#downloadTemplate").onclick=()=>{
+ const url=URL.createObjectURL(new Blob(["\ufeff"+templateCSV()],{type:"text/csv;charset=utf-8"}));
+ const link=document.createElement("a");link.href=url;link.download="prediction_template.csv";link.click();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+};
+document.querySelector("#uploadBatch").onclick=()=>document.querySelector("#batchFile").click();
+document.querySelector("#batchFile").onchange=async event=>{
+ const file=event.target.files[0];if(!file)return;
+ try{
+  const text=(await file.text()).replace(/^\uFEFF/,"");
+  document.querySelector("#batch").value=text;
+  document.querySelector("#batchFilename").textContent=file.name;
+  const rows=validateBatchCSV(text);
+  document.querySelector("#error").textContent="Ready: "+rows.length+" rows.";
+ }catch(e){document.querySelector("#error").textContent=e.message}
+};
+document.querySelector("#batch").value=templateCSV();
+</script></html>
